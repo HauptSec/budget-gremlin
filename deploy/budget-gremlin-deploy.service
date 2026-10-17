@@ -1,0 +1,11 @@
+[Unit]
+Description=Update Budget Gremlin from verified GitHub main and rebuild Docker
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/budget-gremlin
+ExecStart=/bin/bash %h/budget-gremlin/deploy/auto-deploy.sh
+TimeoutStartSec=30min
+UMask=0077

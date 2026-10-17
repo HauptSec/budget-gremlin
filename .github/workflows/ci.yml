@@ -9,6 +9,11 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      - name: Check Docker deployment configuration and updater
+        run: |
+          bash -n deploy/auto-deploy.sh
+          python3 tests/deploy.test.py
+          LAN_IP=127.0.0.1 APP_ORIGIN=https://127.0.0.1 ENCRYPTION_KEY=$(openssl rand -hex 32) docker compose config --quiet
       - run: npm ci
       - run: npm run verify
       - run: npx playwright install --with-deps chromium

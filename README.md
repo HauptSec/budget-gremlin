@@ -2,7 +2,34 @@
 
 A private, self-hosted home for household budgeting. React/TypeScript frontend, Fastify API, SQLite ledger, and an optional SimpleFIN connector. Optional GPT-6 Luna assistance is available with owner-configured spending limits; core budgeting works without it.
 
-## Run locally
+## Quick start — Docker (default)
+
+Production runs as Docker containers: the app plus a bundled Caddy HTTPS proxy. No host Node.js installation is needed. Requires Linux, Git, Docker Engine and the Compose plugin.
+
+```sh
+git clone https://github.com/HauptSec/budget-gremlin.git
+cd budget-gremlin
+cp .env.example .env
+chmod 600 .env
+openssl rand -hex 32
+```
+
+Put the generated key in `.env` as `ENCRYPTION_KEY`. Set `LAN_IP` to your server's private IP and `APP_ORIGIN` to `https://` followed by that same IP. Keep the key private and backed up separately. On an existing installation, preserve its environment file and volumes.
+
+```sh
+docker compose up -d --build --wait
+# Create an owner once, only on a new installation:
+read -s ADMIN_PASSWORD
+export ADMIN_PASSWORD
+docker compose exec -e ADMIN_PASSWORD -e ADMIN_EMAIL=you@example.com -e ADMIN_NAME=Owner app npm run setup
+unset ADMIN_PASSWORD
+```
+
+Open `https://<LAN_IP>`. Caddy uses a private certificate authority; follow [certificate trust and deployment instructions](deploy/README.md) to trust it on your devices. HTTP redirects to HTTPS. The app itself binds only to host loopback, runs non-root with a read-only filesystem, and stores financial records and encrypted backups in persistent Docker volumes. Both containers restart automatically. Never use `docker compose down -v` on an installation whose data you need.
+
+The server can [automatically deploy verified GitHub changes every two minutes](deploy/README.md#automatic-updates-from-github), following the timer approach used by [kanban-calendar](https://github.com/HauptSec/kanban-calendar#auto-deploy-from-github-optional).
+
+## Local development (optional)
 
 Requires Node.js **24.14+** and npm. The lockfile pins the application dependencies. Node 24 is the Docker runtime; `node:sqlite` provides the database without a native addon installation.
 
@@ -45,35 +72,6 @@ On an empty database, set `ADMIN_PASSWORD` as above and run `npm run seed` inste
 4. **Budget:** set income and category allocations, optionally enable signed rollover, and copy a plan into selected months. Unallocated income remains separate from left-to-spend.
 5. **Reports:** compare month/quarter/year/custom ranges, inspect exact allocation totals, and export filtered CSV. Reports exclude pending entries and transfers by default. Confirm statement coverage under Accounts when you have reconciled the complete range.
 6. **Settings:** invite household members, manage categories, connect banks, create backups and review audit history. All members share the ledger; only the owner manages credentials and membership.
-
-## Docker on the home server
-
-Target: **Linux amd64**, accessed privately over your home network/VPN. Docker Engine/Compose must be running. Use a TLS reverse proxy already on your server; neither a public domain nor a specific VPN vendor is assumed.
-
-Set `.env` for deployment:
-
-```dotenv
-APP_ORIGIN=https://your-private-budget-host.example
-ENCRYPTION_KEY=your_64_hex_character_key
-```
-
-Then:
-
-```sh
-docker compose build
-docker compose up -d
-# Supply the owner password via your shell environment, not a literal in shell history.
-read -s ADMIN_PASSWORD
-export ADMIN_PASSWORD
-docker compose exec -e ADMIN_PASSWORD -e ADMIN_EMAIL=you@example.com -e ADMIN_NAME=Owner app npm run setup
-unset ADMIN_PASSWORD
-```
-
-The compose service binds the app to **127.0.0.1:3001 on the host**. Point your private HTTPS reverse proxy there. Match `APP_ORIGIN` exactly to the browser origin. If your reverse proxy is in another container, use a shared private Docker network and the service port instead of publishing the app publicly. `Secure` cookies remain required in production even though TLS terminates at the proxy.
-
-The container runs as the non-root `node` user with a read-only root filesystem, separate persistent data/backup volumes, dropped capabilities and a writable temporary directory. Rootless Docker/custom bind mounts may require directory ownership to match UID 1000.
-
-Image build and startup must be verified on your actual x86 Linux host. A local macOS build does not prove Linux container runtime behavior.
 
 ## Optional U.S. Bank sync
 

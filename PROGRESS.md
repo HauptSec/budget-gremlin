@@ -59,3 +59,7 @@ The development server uses `data/demo.sqlite` containing synthetic data and a v
 - Added category group selection and alphabetized, nested category groups in Settings.
 
 Private deployment details and live financial diagnostics are deliberately excluded from the public repository. Earlier verification entries describe their original development checkpoints, not the latest production state.
+
+## Docker deployment default and GitHub updates
+
+Docker Compose now includes private HTTPS by default. The optional two-minute user-systemd deployer follows the kanban-calendar polling pattern, waits for successful CI for the exact commit, builds before restarting, backs up the ledger, and records success after health checks. Six offline deployment checks cover success, unchanged commits, CI deferral, failed build retry, startup failure, and forced rebuilds.

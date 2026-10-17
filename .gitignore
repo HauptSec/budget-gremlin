@@ -46,3 +46,6 @@ docs/local-model-assessment.md
 .codex/
 .agents/
 .aws/
+
+__pycache__/
+*.pyc
