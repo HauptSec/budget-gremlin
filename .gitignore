@@ -1,0 +1,48 @@
+# Dependencies and generated output
+node_modules/
+dist/
+coverage/
+test-results/
+playwright-report/
+*.log
+*.tsbuildinfo
+
+# Runtime configuration and secrets (only the blank template is public)
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+.secrets/
+secrets/
+
+# Financial records, databases, backups, and local AI memory
+data/
+backups/
+*.sqlite*
+*.db
+*.db-*
+*.encrypted
+ai-memory.json
+*.csv
+*.ofx
+*.qfx
+*.qif
+
+# Private planning / machine-specific notes
+docs/archive/
+docs/private/
+docs/local-model-assessment.md
+
+# Local editor / OS / agent state
+.DS_Store
+._*
+.idea/
+.vscode/
+.codex/
+.agents/
+.aws/

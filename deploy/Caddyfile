@@ -1,0 +1,8 @@
+{
+    default_sni {$LAN_IP}
+}
+
+{$LAN_IP} {
+    tls internal
+    reverse_proxy app:3001
+}

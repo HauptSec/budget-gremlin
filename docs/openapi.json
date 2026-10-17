@@ -1,0 +1,2145 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Budget Gremlin API",
+    "version": "0.1.0"
+  },
+  "components": {
+    "schemas": {}
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "summary": "Process health",
+        "tags": [
+          "health"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "summary": "Sign in",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "summary": "Current session",
+        "tags": [
+          "auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "summary": "End session",
+        "tags": [
+          "auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/sessions": {
+      "get": {
+        "summary": "List your sessions",
+        "tags": [
+          "auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/sessions/{id}": {
+      "delete": {
+        "summary": "Revoke a session",
+        "tags": [
+          "auth"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/password": {
+      "post": {
+        "summary": "Change your password",
+        "tags": [
+          "auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/users": {
+      "get": {
+        "summary": "List household members",
+        "tags": [
+          "users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/invitations": {
+      "post": {
+        "summary": "Invite household member",
+        "tags": [
+          "invitations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  }
+                },
+                "required": [
+                  "email"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/accept-invite": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}": {
+      "delete": {
+        "summary": "Remove household member",
+        "tags": [
+          "users"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/meta": {
+      "get": {
+        "summary": "Taxonomy, accounts and settings",
+        "tags": [
+          "meta"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/accounts": {
+      "get": {
+        "summary": "List accounts and calculated balances",
+        "tags": [
+          "accounts"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create account",
+        "tags": [
+          "accounts"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "checking",
+                      "savings",
+                      "credit_card",
+                      "cash",
+                      "loan",
+                      "investment",
+                      "property"
+                    ]
+                  },
+                  "opening_balance": {
+                    "default": 0,
+                    "type": "integer",
+                    "minimum": -100000000000,
+                    "maximum": 100000000000
+                  },
+                  "opening_date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "include_budgets": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "include_reports": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "archived": {
+                    "default": false,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "name",
+                  "type",
+                  "opening_balance",
+                  "opening_date",
+                  "include_budgets",
+                  "include_reports",
+                  "archived"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/accounts/{id}": {
+      "patch": {
+        "summary": "Edit or archive account",
+        "tags": [
+          "accounts"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "checking",
+                      "savings",
+                      "credit_card",
+                      "cash",
+                      "loan",
+                      "investment",
+                      "property"
+                    ]
+                  },
+                  "opening_balance": {
+                    "default": 0,
+                    "type": "integer",
+                    "minimum": -100000000000,
+                    "maximum": 100000000000
+                  },
+                  "opening_date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "include_budgets": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "include_reports": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "archived": {
+                    "default": false,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "name",
+                  "type",
+                  "opening_balance",
+                  "opening_date",
+                  "include_budgets",
+                  "include_reports",
+                  "archived"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/categories": {
+      "post": {
+        "summary": "Create category",
+        "tags": [
+          "categories"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "group_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "income",
+                      "expense",
+                      "transfer"
+                    ]
+                  },
+                  "color": {
+                    "default": "#769B7E",
+                    "type": "string",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                  },
+                  "archived": {
+                    "default": false,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "name",
+                  "group_name",
+                  "kind",
+                  "color",
+                  "archived"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/categories/{id}": {
+      "patch": {
+        "summary": "Edit category",
+        "tags": [
+          "categories"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "group_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "income",
+                      "expense",
+                      "transfer"
+                    ]
+                  },
+                  "color": {
+                    "default": "#769B7E",
+                    "type": "string",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                  },
+                  "archived": {
+                    "default": false,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "name",
+                  "group_name",
+                  "kind",
+                  "color",
+                  "archived"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/categories/{id}/merge": {
+      "post": {
+        "summary": "Merge categories",
+        "tags": [
+          "categories"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/transactions": {
+      "get": {
+        "summary": "Search and page transactions",
+        "tags": [
+          "transactions"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create manual transaction",
+        "tags": [
+          "transactions"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "merchant": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "amount": {
+                    "type": "integer",
+                    "minimum": -100000000000,
+                    "maximum": 100000000000
+                  },
+                  "status": {
+                    "default": "posted",
+                    "type": "string",
+                    "enum": [
+                      "posted",
+                      "pending"
+                    ]
+                  },
+                  "notes": {
+                    "default": "",
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "reviewed": {
+                    "default": false,
+                    "type": "boolean"
+                  },
+                  "allocations": {
+                    "minItems": 1,
+                    "maxItems": 50,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "category_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100
+                        },
+                        "amount": {
+                          "type": "integer",
+                          "minimum": -100000000000,
+                          "maximum": 100000000000
+                        },
+                        "tags": {
+                          "default": [],
+                          "maxItems": 20,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 40
+                          }
+                        }
+                      },
+                      "required": [
+                        "category_id",
+                        "amount",
+                        "tags"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "locked": {
+                    "default": true,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "account_id",
+                  "date",
+                  "merchant",
+                  "amount",
+                  "status",
+                  "notes",
+                  "reviewed",
+                  "allocations",
+                  "locked"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/transactions/{id}": {
+      "patch": {
+        "summary": "Edit and split transaction",
+        "tags": [
+          "transactions"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "merchant": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "amount": {
+                    "type": "integer",
+                    "minimum": -100000000000,
+                    "maximum": 100000000000
+                  },
+                  "status": {
+                    "default": "posted",
+                    "type": "string",
+                    "enum": [
+                      "posted",
+                      "pending"
+                    ]
+                  },
+                  "notes": {
+                    "default": "",
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "reviewed": {
+                    "default": false,
+                    "type": "boolean"
+                  },
+                  "allocations": {
+                    "minItems": 1,
+                    "maxItems": 50,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "category_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100
+                        },
+                        "amount": {
+                          "type": "integer",
+                          "minimum": -100000000000,
+                          "maximum": 100000000000
+                        },
+                        "tags": {
+                          "default": [],
+                          "maxItems": 20,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 40
+                          }
+                        }
+                      },
+                      "required": [
+                        "category_id",
+                        "amount",
+                        "tags"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "locked": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "account_id",
+                  "date",
+                  "merchant",
+                  "amount",
+                  "status",
+                  "notes",
+                  "reviewed",
+                  "allocations",
+                  "locked",
+                  "revision"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/transactions/bulk": {
+      "post": {
+        "summary": "Bulk review or categorize selected transactions",
+        "tags": [
+          "transactions"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/transfers/suggestions": {
+      "get": {
+        "summary": "Suggested transfer pairs",
+        "tags": [
+          "transfers"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/transfers": {
+      "post": {
+        "summary": "Confirm transfer pair",
+        "tags": [
+          "transfers"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/transfers/{id}": {
+      "delete": {
+        "summary": "Unlink transfer",
+        "tags": [
+          "transfers"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/rules": {
+      "get": {
+        "summary": "List classification rules",
+        "tags": [
+          "rules"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      },
+      "post": {
+        "summary": "Save classification rule",
+        "tags": [
+          "rules"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "priority": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000
+                  },
+                  "enabled": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "mode": {
+                    "default": "all",
+                    "type": "string",
+                    "enum": [
+                      "all",
+                      "any"
+                    ]
+                  },
+                  "predicates": {
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "field": {
+                          "type": "string",
+                          "enum": [
+                            "merchant",
+                            "raw_description",
+                            "account_id",
+                            "amount",
+                            "direction"
+                          ]
+                        },
+                        "op": {
+                          "type": "string",
+                          "enum": [
+                            "equals",
+                            "contains",
+                            "prefix",
+                            "between"
+                          ]
+                        },
+                        "value": {
+                          "default": "",
+                          "type": "string",
+                          "maxLength": 200
+                        },
+                        "min": {
+                          "type": "integer",
+                          "minimum": -100000000000,
+                          "maximum": 100000000000
+                        },
+                        "max": {
+                          "type": "integer",
+                          "minimum": -100000000000,
+                          "maximum": 100000000000
+                        }
+                      },
+                      "required": [
+                        "field",
+                        "op",
+                        "value"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "category_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "merchant": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "tags": {
+                    "default": [],
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 40
+                    }
+                  },
+                  "reviewed": {
+                    "default": false,
+                    "type": "boolean"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "priority",
+                  "enabled",
+                  "mode",
+                  "predicates",
+                  "category_id",
+                  "tags",
+                  "reviewed"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/rules/{id}": {
+      "delete": {
+        "summary": "Delete rule",
+        "tags": [
+          "rules"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/rules/preview": {
+      "post": {
+        "summary": "Preview retroactive classification",
+        "tags": [
+          "rules"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/rules/apply": {
+      "post": {
+        "summary": "Apply versioned rule preview",
+        "tags": [
+          "rules"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/aliases": {
+      "get": {
+        "summary": "Merchant defaults",
+        "tags": [
+          "aliases"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      },
+      "post": {
+        "summary": "Set merchant default",
+        "tags": [
+          "aliases"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/imports/preview": {
+      "post": {
+        "summary": "Preview CSV mapping",
+        "tags": [
+          "imports"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "csv": {
+                    "type": "string",
+                    "maxLength": 10485760
+                  },
+                  "mapping": {
+                    "type": "object",
+                    "properties": {
+                      "date": {
+                        "type": "string"
+                      },
+                      "merchant": {
+                        "type": "string"
+                      },
+                      "amount": {
+                        "default": "",
+                        "type": "string"
+                      },
+                      "debit": {
+                        "default": "",
+                        "type": "string"
+                      },
+                      "credit": {
+                        "default": "",
+                        "type": "string"
+                      },
+                      "reference": {
+                        "default": "",
+                        "type": "string"
+                      },
+                      "date_format": {
+                        "default": "YYYY-MM-DD",
+                        "type": "string",
+                        "enum": [
+                          "YYYY-MM-DD",
+                          "MM/DD/YYYY",
+                          "DD/MM/YYYY"
+                        ]
+                      },
+                      "invert": {
+                        "default": false,
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "date",
+                      "merchant",
+                      "amount",
+                      "debit",
+                      "credit",
+                      "reference",
+                      "date_format",
+                      "invert"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "account_id",
+                  "csv",
+                  "mapping"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/imports/commit": {
+      "post": {
+        "summary": "Commit accepted CSV rows",
+        "tags": [
+          "imports"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "csv": {
+                    "type": "string",
+                    "maxLength": 10485760
+                  },
+                  "mapping": {
+                    "type": "object",
+                    "properties": {
+                      "date": {
+                        "type": "string"
+                      },
+                      "merchant": {
+                        "type": "string"
+                      },
+                      "amount": {
+                        "default": "",
+                        "type": "string"
+                      },
+                      "debit": {
+                        "default": "",
+                        "type": "string"
+                      },
+                      "credit": {
+                        "default": "",
+                        "type": "string"
+                      },
+                      "reference": {
+                        "default": "",
+                        "type": "string"
+                      },
+                      "date_format": {
+                        "default": "YYYY-MM-DD",
+                        "type": "string",
+                        "enum": [
+                          "YYYY-MM-DD",
+                          "MM/DD/YYYY",
+                          "DD/MM/YYYY"
+                        ]
+                      },
+                      "invert": {
+                        "default": false,
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "date",
+                      "merchant",
+                      "amount",
+                      "debit",
+                      "credit",
+                      "reference",
+                      "date_format",
+                      "invert"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "account_id",
+                  "csv",
+                  "mapping",
+                  "revision"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/imports": {
+      "get": {
+        "summary": "Import history",
+        "tags": [
+          "imports"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/imports/mappings": {
+      "get": {
+        "summary": "Saved CSV mappings",
+        "tags": [
+          "imports"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/duplicates": {
+      "get": {
+        "summary": "Quarantined duplicates",
+        "tags": [
+          "duplicates"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/duplicates/{id}": {
+      "post": {
+        "summary": "Resolve duplicate candidate",
+        "tags": [
+          "duplicates"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/imports/{id}/undo": {
+      "get": {
+        "summary": "Preview import undo",
+        "tags": [
+          "imports"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      },
+      "post": {
+        "summary": "Undo unchanged imported rows",
+        "tags": [
+          "imports"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/budgets/{month}": {
+      "get": {
+        "summary": "Monthly budget and rollover",
+        "tags": [
+          "budgets"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "month",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/budgets": {
+      "post": {
+        "summary": "Save monthly plan",
+        "tags": [
+          "budgets"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "month": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-(0[1-9]|1[0-2])$"
+                  },
+                  "expected_income": {
+                    "type": "integer",
+                    "minimum": -100000000000,
+                    "maximum": 100000000000
+                  },
+                  "lines": {
+                    "maxItems": 200,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "category_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100
+                        },
+                        "amount": {
+                          "type": "integer",
+                          "minimum": -100000000000,
+                          "maximum": 100000000000
+                        },
+                        "rollover": {
+                          "default": false,
+                          "type": "boolean"
+                        },
+                        "opening": {
+                          "default": 0,
+                          "type": "integer",
+                          "minimum": -100000000000,
+                          "maximum": 100000000000
+                        }
+                      },
+                      "required": [
+                        "category_id",
+                        "amount",
+                        "rollover",
+                        "opening"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "month",
+                  "expected_income",
+                  "lines"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/budgets/copy": {
+      "post": {
+        "summary": "Copy budget to selected months",
+        "tags": [
+          "budgets"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/reports": {
+      "get": {
+        "summary": "Posted report with exact drill-down",
+        "tags": [
+          "reports"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "in": "query",
+            "name": "start",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "in": "query",
+            "name": "end",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "in": "query",
+            "name": "account",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "in": "query",
+            "name": "category",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "group",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "merchant",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "tag",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "name": "reviewed",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "in": "query",
+            "name": "priorStart",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "in": "query",
+            "name": "priorEnd",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/reports/export": {
+      "get": {
+        "summary": "CSV export of filtered allocations",
+        "tags": [
+          "reports"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "in": "query",
+            "name": "start",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "in": "query",
+            "name": "end",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "in": "query",
+            "name": "account",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "in": "query",
+            "name": "category",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "group",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "merchant",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "tag",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "name": "reviewed",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "in": "query",
+            "name": "priorStart",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "in": "query",
+            "name": "priorEnd",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/coverage": {
+      "post": {
+        "summary": "Confirm imported coverage",
+        "tags": [
+          "coverage"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "account_id": {
+                    "type": "string"
+                  },
+                  "start": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "end": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  }
+                },
+                "required": [
+                  "account_id",
+                  "start",
+                  "end"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/audit": {
+      "get": {
+        "summary": "Recent audit history",
+        "tags": [
+          "audit"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/audit/{id}/revert": {
+      "post": {
+        "summary": "Revert an unchanged transaction edit",
+        "tags": [
+          "audit"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/settings": {
+      "get": {
+        "summary": "Household preferences",
+        "tags": [
+          "settings"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update household preferences",
+        "tags": [
+          "settings"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/connections": {
+      "get": {
+        "summary": "Bank connection health",
+        "tags": [
+          "connections"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      },
+      "post": {
+        "summary": "Connect SimpleFIN with setup token",
+        "tags": [
+          "connections"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "setup_token": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "start": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  }
+                },
+                "required": [
+                  "setup_token",
+                  "start"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/connections/{id}/accounts": {
+      "get": {
+        "summary": "Discovered provider accounts",
+        "tags": [
+          "connections"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/connections/{id}/link": {
+      "post": {
+        "summary": "Link provider and local account",
+        "tags": [
+          "connections"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/connections/{id}/sync": {
+      "post": {
+        "summary": "Sync bank data",
+        "tags": [
+          "connections"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/connections/{id}": {
+      "delete": {
+        "summary": "Disconnect bank",
+        "tags": [
+          "connections"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/backups": {
+      "post": {
+        "summary": "Create encrypted backup",
+        "tags": [
+          "backups"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/ai": {
+      "get": {
+        "summary": "AI status and estimated usage",
+        "tags": [
+          "ai"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/ai/settings": {
+      "post": {
+        "summary": "Configure OpenAI",
+        "tags": [
+          "ai"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/ai/memory": {
+      "get": {
+        "summary": "Local AI learning memory",
+        "tags": [
+          "ai"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      },
+      "post": {
+        "summary": "Update local memory",
+        "tags": [
+          "ai"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/ai/chat": {
+      "get": {
+        "summary": "Your chat history",
+        "tags": [
+          "ai"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Clear your chat",
+        "tags": [
+          "ai"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/ai/run": {
+      "post": {
+        "summary": "Run bounded AI task",
+        "tags": [
+          "ai"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/ai/review": {
+      "post": {
+        "summary": "Run free deterministic review checks",
+        "tags": [
+          "ai"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/ai/proposals": {
+      "get": {
+        "summary": "Your pending AI proposals",
+        "tags": [
+          "ai"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/ai/proposals/{id}": {
+      "post": {
+        "summary": "Confirm or dismiss an AI proposal",
+        "tags": [
+          "ai"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/ai/recurring": {
+      "get": {
+        "summary": "Monthly recurring planning items",
+        "tags": [
+          "ai"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      },
+      "post": {
+        "summary": "Save recurring planning item",
+        "tags": [
+          "ai"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/ai/recurring-budget": {
+      "post": {
+        "summary": "Propose budget from recurring items",
+        "tags": [
+          "ai"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/v1/openapi.json": {
+      "get": {
+        "summary": "API specification",
+        "tags": [
+          "openapi.json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    }
+  }
+}

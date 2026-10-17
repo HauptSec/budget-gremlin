@@ -1,0 +1,23 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3001:3001"
+    environment:
+      APP_ORIGIN: ${APP_ORIGIN:?Set your private HTTPS origin}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?Set a 64-character hex encryption key}
+      SECURE_COOKIES: "true"
+    volumes:
+      - gremlin-data:/data
+      - gremlin-backups:/backups
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+volumes:
+  gremlin-data:
+  gremlin-backups:

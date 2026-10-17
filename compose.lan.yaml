@@ -1,0 +1,21 @@
+services:
+  proxy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "${LAN_IP:?Set LAN_IP}:80:80"
+      - "${LAN_IP:?Set LAN_IP}:443:443"
+    environment:
+      LAN_IP: ${LAN_IP:?Set LAN_IP}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - gremlin-caddy-data:/data
+      - gremlin-caddy-config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+volumes:
+  gremlin-caddy-data:
+  gremlin-caddy-config:
