@@ -154,4 +154,4 @@ Disable AI to stop new model calls; remove the key in owner settings if desired.
 
 ## GitHub CI setup
 
-The verification workflow is provided in `docs/ci-workflow.yml`. To enable GitHub Actions, move it to `.github/workflows/ci.yml` and push using GitHub authentication with permission to manage workflows. It runs lint, type checks, unit/API tests, a production build, and browser tests using synthetic data. No production secrets are needed.
+The verification workflow lives in `.github/workflows/ci.yml` and runs on pushes and pull requests. It runs lint, type checks, unit/API tests, a production build, and browser tests using synthetic data. No production secrets are needed.
