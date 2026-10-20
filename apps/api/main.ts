@@ -1,3 +1,4 @@
+import { householdToday, syncRecurringPlan } from "./recurring.ts";
 import { scheduledAi } from "./ai.ts";
 import { Store } from "./db.ts";
 import { createServer } from "./server.ts";
@@ -36,6 +37,9 @@ const timer = setInterval(async () => {
         await syncConnection(store, c.id).catch(() =>
           console.warn("Bank sync requires attention; see Settings."),
         );
+    store.atomic(() =>
+      syncRecurringPlan(store, householdToday(store).slice(0, 7)),
+    );
     await scheduledAi(store);
     const day = new Date().toISOString().slice(0, 10);
     if (

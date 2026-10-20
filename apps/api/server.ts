@@ -1,4 +1,21 @@
 import {
+  migrateSchedules,
+  schedules,
+  calendar,
+  saveSchedule,
+  saveException,
+  recurringSuggestions,
+  dismissSuggestion,
+  syncRecurringPlan,
+  recurringPlan,
+  monthItems,
+} from "./recurring.ts";
+import {
+  scheduleSchema,
+  exceptionSchema,
+  planWithRecurring,
+} from "../../packages/recurring/index.ts";
+import {
   aiStatus,
   saveAiConfig,
   aiMemory,
@@ -76,8 +93,10 @@ export async function createServer(
     origin = process.env.APP_ORIGIN || "http://localhost:5173",
     secure = process.env.SECURE_COOKIES === "true",
     serveStatic = true,
+    rateLimitMax = 300,
   } = {},
 ) {
+  migrateSchedules(store);
   const app = Fastify({
     logger: false,
     bodyLimit: 12 * 1024 * 1024,
@@ -99,7 +118,7 @@ export async function createServer(
       },
     },
   });
-  await app.register(rateLimit, { max: 300, timeWindow: "1 minute" });
+  await app.register(rateLimit, { max: rateLimitMax, timeWindow: "1 minute" });
   await app.register(swagger, {
     openapi: { info: { title: "Budget Gremlin API", version: "0.1.0" } },
   });
@@ -183,6 +202,8 @@ export async function createServer(
       });
   };
   const requestBodies: Record<string, z.ZodType> = {
+    "POST /api/v1/recurring": scheduleSchema,
+    "POST /api/v1/recurring/occurrence": exceptionSchema,
     "POST /api/v1/accounts": accountSchema,
     "PATCH /api/v1/accounts/:id": accountSchema,
     "POST /api/v1/categories": categorySchema,
@@ -1013,25 +1034,30 @@ export async function createServer(
     "Monthly budget and rollover",
     async (req) => {
       const m = month.parse((req.params as { month: string }).month);
-      const plan = store.get<Budget>("budgets", m) || {
-        month: m,
-        expected_income: 0,
-        lines: [],
-      };
+      const plan = store.atomic(() => syncRecurringPlan(store, m, req.user.id));
       const included = new Set(
         store
           .accounts()
           .filter((a) => a.include_budgets)
           .map((a) => a.id),
       );
-      return budgetView(
-        plan,
-        store.budgets(),
-        store.txs().filter((t) => included.has(t.account_id)),
-        store.categories(),
-        today(),
-        store.get("settings", "household")?.include_pending !== false,
-      );
+      return {
+        ...budgetView(
+          plan,
+          store.budgets(),
+          store.txs().filter((t) => included.has(t.account_id)),
+          store.categories(),
+          today(),
+          store.get("settings", "household")?.include_pending !== false,
+        ),
+        recurring_floor:
+          m >= today().slice(0, 7)
+            ? planWithRecurring(
+                { month: m, expected_income: 0, lines: [] },
+                monthItems(store, m),
+              )
+            : { month: m, expected_income: 0, lines: [] },
+      };
     },
   );
   route("POST", "/api/v1/budgets", "Save monthly plan", async (req) => {
@@ -1042,7 +1068,7 @@ export async function createServer(
       if (store.get("categories", l.category_id)?.kind !== "expense")
         throw new Error("Budgets require expense categories");
     store.atomic(() => {
-      store.put("budgets", b.month, b);
+      store.put("budgets", b.month, recurringPlan(store, b.month, b));
       store.audit(req.user.id, "budget", b.month);
     });
     return {
@@ -1476,11 +1502,72 @@ export async function createServer(
         z.object({ apply: z.boolean() }).parse(req.body).apply,
       ),
   );
+  route("GET", "/api/v1/recurring", "Recurring schedules", async () =>
+    schedules(store),
+  );
+  route(
+    "POST",
+    "/api/v1/recurring",
+    "Save schedule and update current budget",
+    async (req) => saveSchedule(store, req.user.id, req.body),
+  );
+  route(
+    "GET",
+    "/api/v1/calendar/:month",
+    "Expected occurrences and transaction matches",
+    async (req) =>
+      calendar(store, month.parse((req.params as { month: string }).month)),
+  );
+  route(
+    "POST",
+    "/api/v1/recurring/occurrence",
+    "Reschedule, skip, or match an occurrence",
+    async (req) => saveException(store, req.user.id, req.body),
+  );
+  route(
+    "GET",
+    "/api/v1/recurring/suggestions",
+    "Detect recurring patterns without AI",
+    async () => recurringSuggestions(store),
+  );
+  route(
+    "POST",
+    "/api/v1/recurring/suggestions/:id/dismiss",
+    "Dismiss a recurring suggestion",
+    async (req) => {
+      dismissSuggestion(
+        store,
+        req.user.id,
+        z
+          .string()
+          .regex(/^[a-f0-9]{24}$/)
+          .parse((req.params as { id: string }).id),
+      );
+      return { ok: true };
+    },
+  );
+  route(
+    "POST",
+    "/api/v1/recurring/suggestions/reset",
+    "Restore dismissed recurring suggestions",
+    async (req) => {
+      store.atomic(() => {
+        for (const r of store.all<{ id: string }>("recurring_dismissed"))
+          store.delete("recurring_dismissed", r.id);
+        store.audit(req.user.id, "restore-recurring-suggestions", "household");
+      });
+      return { ok: true };
+    },
+  );
   route(
     "GET",
     "/api/v1/ai/recurring",
     "Monthly recurring planning items",
-    async () => store.all("recurring"),
+    async () =>
+      schedules(store).map((r) => ({
+        ...r,
+        due_day: r.days[0] || Number(r.start_date.slice(8)),
+      })),
   );
   route(
     "POST",

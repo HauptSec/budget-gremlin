@@ -1,3 +1,8 @@
+import { saveLegacySchedule, monthItems } from "./recurring.ts";
+import {
+  planWithRecurring,
+  type Schedule,
+} from "../../packages/recurring/index.ts";
 import { z } from "zod";
 import { createHash } from "node:crypto";
 import { writeFileSync, renameSync, readFileSync, existsSync } from "node:fs";
@@ -421,7 +426,8 @@ export function decideProposal(
               "Budget category changed; request a fresh proposal",
             );
       } else validateRecurringCategory(s, target);
-      s.put(kind, key, target);
+      if (p.kind === "recurring") saveLegacySchedule(s, actor, target, true);
+      else s.put(kind, key, target);
       s.audit(actor, "ai-apply-" + p.kind, key, current, target);
     });
   s.put("ai_proposals", id, { ...p, status: "applied" });
@@ -445,10 +451,7 @@ function validateRecurringCategory(s: Store, r: Recurring) {
 export function saveRecurring(s: Store, actor: string, input: unknown) {
   const b = recurringSchema.parse(input);
   validateRecurringCategory(s, b);
-  const old = s.get("recurring", b.id);
-  s.put("recurring", b.id, b);
-  s.audit(actor, "recurring-item", b.id, old, b);
-  return b;
+  return saveLegacySchedule(s, actor, b);
 }
 export function proposeRecurringBudget(s: Store, actor: string, m: string) {
   month.parse(m);
@@ -456,28 +459,12 @@ export function proposeRecurringBudget(s: Store, actor: string, m: string) {
     base = budgetSchema.parse(
       before || { month: m, expected_income: 0, lines: [] },
     );
-  const totals = new Map<string, number>();
-  let income = 0;
-  for (const r of s.all<Recurring>("recurring").filter((r) => r.active)) {
-    if (r.kind === "income") income += r.amount;
-    else totals.set(r.category_id, (totals.get(r.category_id) || 0) + r.amount);
-  }
-  const lines = base.lines.map((l) => ({ ...l }));
-  for (const [category_id, amount] of totals) {
-    const l = lines.find((x) => x.category_id === category_id);
-    if (l) l.amount = Math.max(l.amount, amount);
-    else lines.push({ category_id, amount, rollover: false, opening: 0 });
-  }
   return makeProposal(
     s,
     actor,
     "budget",
     before,
-    budgetSchema.parse({
-      ...base,
-      expected_income: Math.max(base.expected_income, income),
-      lines,
-    }),
+    budgetSchema.parse(planWithRecurring(base, monthItems(s, m))),
   );
 }
 const taskSchema = z.object({
@@ -655,9 +642,19 @@ export async function runAi(
       })),
       budget,
       recurring: s
-        .all<Recurring>("recurring")
+        .all<Schedule>("recurring")
         .filter((r) => r.active)
-        .slice(0, 30),
+        .slice(0, 30)
+        .map((r) => ({
+          id: r.id,
+          name: r.name,
+          kind: r.kind,
+          amount: r.amount,
+          category_id: r.category_id,
+          frequency: r.frequency || "monthly",
+          start_date: r.start_date,
+          days: r.days,
+        })),
       memory: {
         notes: memory.notes,
         examples: memory.examples
@@ -835,6 +832,8 @@ export async function runAi(
       for (const r of answer.recurring) {
         const before = r.id ? s.get("recurring", r.id) || null : null;
         if (r.id && !before) throw new Error("Recurring item not found");
+        if (before?.frequency && before.frequency !== "monthly")
+          throw new Error("Use Recurring plans to edit non-monthly schedules");
         if (
           !categories.some(
             (c) => c.id === r.category_id && c.kind != "transfer",

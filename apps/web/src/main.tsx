@@ -1,3 +1,4 @@
+import { RecurringWorkspace } from "./RecurringWorkspace";
 import { AiWorkspace } from "./AiWorkspace";
 import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
@@ -88,6 +89,8 @@ const nav = [
   ["overview", "Overview", LayoutDashboard],
   ["transactions", "Transactions", ArrowLeftRight],
   ["budget", "Budget", Wallet],
+  ["recurring", "Recurring plans", CalendarDays],
+  ["calendar", "Calendar", CalendarDays],
   ["reports", "Reports", ChartNoAxesCombined],
   ["accounts", "Accounts", CreditCard],
   ["ai", "AI assistant", Sparkles],
@@ -263,6 +266,10 @@ function App() {
             <Transactions {...content} />
           ) : page === "budget" ? (
             <Budgets {...content} />
+          ) : page === "recurring" ? (
+            <RecurringWorkspace key="schedules" />
+          ) : page === "calendar" ? (
+            <RecurringWorkspace key="calendar" view="calendar" />
           ) : page === "reports" ? (
             <Reports {...content} />
           ) : page === "accounts" ? (
@@ -1749,7 +1756,7 @@ function ImportModal({
                   revision: preview.revision,
                 });
                 notice(
-                  `${result.inserted} imported · ${result.flagged} held for review · ${result.skipped} skipped`,
+                  `${result.inserted} imported · ${result.flagged} held for review · ${result.skipped} skipped. Check Recurring plans for suggested schedules.`,
                 );
                 onClose();
               }
@@ -2326,6 +2333,14 @@ function Budgets({ notice }: Props) {
         subtitle="A monthly plan that bends with you, without losing the plot."
       >
         <MonthPicker value={month} onChange={setMonth} />
+        <Button
+          variant="secondary"
+          onClick={() => {
+            location.hash = "recurring";
+          }}
+        >
+          Recurring items
+        </Button>
         <Button onClick={() => setEditing(true)}>
           <SlidersHorizontal size={16} /> Edit plan
         </Button>
@@ -2558,6 +2573,22 @@ function BudgetModal({
                 rollover: f.get("rollover:" + c.id) === "on",
                 opening: cents(String(f.get("opening:" + c.id) || "0")),
               }));
+            for (const floor of plan.recurring_floor?.lines || []) {
+              if (
+                (lines.find((l: any) => l.category_id === floor.category_id)
+                  ?.amount || 0) < floor.amount
+              )
+                throw new Error(
+                  "This plan must cover its scheduled items. Adjust the recurring schedule or occurrence first.",
+                );
+            }
+            if (
+              cents(String(f.get("income"))) <
+              (plan.recurring_floor?.expected_income || 0)
+            )
+              throw new Error(
+                "Expected income must cover scheduled income. Adjust its recurring schedule first.",
+              );
             await api("/budgets", {
               month: plan.month,
               expected_income: cents(String(f.get("income"))),
@@ -2570,7 +2601,14 @@ function BudgetModal({
         }}
       >
         {err && <Alert>{err}</Alert>}
-        <Field label="Expected monthly income">
+        <Field
+          label="Expected monthly income"
+          hint={
+            plan.recurring_floor?.expected_income
+              ? `Scheduled minimum: ${money(plan.recurring_floor.expected_income)}`
+              : undefined
+          }
+        >
           <input
             name="income"
             defaultValue={dollars(plan.expected_income)}
@@ -2606,7 +2644,21 @@ function BudgetModal({
                           defaultChecked={!!line}
                         />
                       </td>
-                      <td>{c.name}</td>
+                      <td>
+                        {c.name}
+                        {plan.recurring_floor?.lines.find(
+                          (l: any) => l.category_id === c.id,
+                        ) && (
+                          <small>
+                            Scheduled minimum:{" "}
+                            {money(
+                              plan.recurring_floor.lines.find(
+                                (l: any) => l.category_id === c.id,
+                              ).amount,
+                            )}
+                          </small>
+                        )}
+                      </td>
                       <td>
                         <input
                           className="money-input"

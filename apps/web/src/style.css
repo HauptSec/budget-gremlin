@@ -2345,3 +2345,194 @@ summary {
     flex-wrap: wrap;
   }
 }
+
+/* Recurring planning and calendar share the app's existing theme tokens. */
+.recurring-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.recurring-toolbar .field {
+  margin: 0;
+}
+.recurring-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+.recurring-summary small,
+.recurring-summary strong {
+  display: block;
+}
+.recurring-summary strong {
+  font-size: 23px;
+  margin-top: 8px;
+}
+.recurring-summary small {
+  color: var(--muted);
+}
+.recurring-list {
+  display: grid;
+}
+.recurring-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border);
+}
+.recurring-row > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+.recurring-row h3,
+.recurring-suggestion h3 {
+  margin: 0 0 8px;
+}
+.recurring-row p {
+  margin: 0 0 6px;
+}
+.recurring-row p,
+.recurring-row small {
+  color: var(--muted);
+}
+.recurring-row strong {
+  white-space: nowrap;
+}
+.recurring-suggestion {
+  padding: 20px 0;
+  border-top: 1px solid var(--border);
+}
+.recurring-suggestion summary {
+  cursor: pointer;
+}
+.calendar-weekdays,
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.calendar-weekdays span {
+  padding: 12px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.calendar-grid {
+  border-top: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+}
+.calendar-day,
+.calendar-blank {
+  min-height: 145px;
+  padding: 8px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+.calendar-day h2 {
+  font-size: 13px;
+  margin: 0 0 8px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.calendar-day h2 small {
+  font-size: 10px;
+  color: var(--muted);
+}
+.calendar-day.is-today {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.calendar-item {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  margin: 6px 0;
+  width: 100%;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.calendar-item small {
+  text-transform: capitalize;
+  color: var(--muted);
+}
+.calendar-item.status-overdue {
+  border-left: 3px solid var(--warn);
+}
+.calendar-item.status-paid,
+.calendar-item.status-received {
+  border-left: 3px solid var(--accent);
+}
+.calendar-item.status-skipped {
+  border-style: dashed;
+}
+.calendar-item:hover,
+.calendar-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.calendar-mobile-date {
+  display: none;
+}
+@media (max-width: 1000px) {
+  .recurring-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .recurring-row {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 700px) {
+  .calendar-weekdays,
+  .calendar-blank,
+  .calendar-day.empty-day {
+    display: none;
+  }
+  .calendar-grid {
+    display: block;
+    border: 0;
+  }
+  .calendar-day {
+    min-height: 0;
+    padding: 16px 0;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .calendar-day h2 > time {
+    display: none;
+  }
+  .calendar-mobile-date {
+    display: inline;
+  }
+  .calendar-item {
+    font-size: 14px;
+    padding: 12px;
+  }
+  .recurring-summary strong {
+    font-size: 20px;
+  }
+  .recurring-row > div:first-child {
+    flex-basis: 100%;
+  }
+}
+
+.recurring-panel {
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.money-calendar {
+  padding: 16px;
+}
+@media (max-width: 700px) {
+  .recurring-panel {
+    padding: 16px;
+  }
+  .money-calendar {
+    padding: 12px;
+  }
+}

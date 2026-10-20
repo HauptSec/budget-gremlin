@@ -1,3 +1,4 @@
+import { householdToday } from "../apps/api/recurring.ts";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
@@ -382,7 +383,7 @@ test("out-of-scope and malicious merchant instructions cannot execute model chan
     s.close();
   }
 });
-test("local review flags enter Needs review once; recurring plans are explicit proposals", () => {
+test("local review flags enter Needs review once; recurring saves set budget floors and proposals remain confirmed", () => {
   const s = fixture();
   try {
     const t = tx(s, "large", {
@@ -404,8 +405,9 @@ test("local review flags enter Needs review once; recurring plans are explicit p
       due_day: 1,
       active: true,
     });
-    const p = proposeRecurringBudget(s, user.id, "2026-09");
-    assert.equal(s.get("budgets", "2026-09"), undefined);
+    const currentMonth = householdToday(s).slice(0, 7);
+    assert.equal(s.get<any>("budgets", currentMonth)?.lines[0].amount, 150000);
+    const p = proposeRecurringBudget(s, user.id, currentMonth);
     decideProposal(s, user.id, p.id, true);
     assert.equal(s.budgets()[0].lines[0].amount, 150000);
   } finally {

@@ -153,3 +153,15 @@ Disable AI to stop new model calls; remove the key in owner settings if desired.
 ## GitHub CI setup
 
 The verification workflow lives in `.github/workflows/ci.yml` and runs on pushes and pull requests. It runs lint, type checks, unit/API tests, a production build, and browser tests using synthetic data. No production secrets are needed.
+
+## Recurring plans and calendar
+
+Use **Recurring plans** (also linked from Budget) to define income/paydays, bills, subscriptions, transfers and spending allowances. Supported schedules are one-time, weekly, every two weeks, twice monthly, monthly, quarterly and yearly. Pick a start date, category and expected amount; optional account/merchant matching and an estimate flag help with variable bills. Backdate the start date if earlier occurrences should count in this month's plan. No example bills are added automatically.
+
+Saving raises the current month's category allocation or expected income only when scheduled totals exceed the existing plan. Future months are included when their Budget page is opened. Plans never generate actual transactions. Pausing, skipping or lowering an item does not automatically reduce a saved budget; adjust the plan yourself if you want to release money. Transfers appear on the calendar but stay outside expense allocations. An allowance reserves a category amount without expecting a single payment.
+
+**Calendar** shows expected dates, monthly totals and payment status. Open an occurrence to reschedule it, change that occurrence's estimate, skip it, match a transaction or unlink one. Automatic matches require a unique merchant/amount/direction/account match within three days; variable or ambiguous matches need review. Pending matches remain pending until posted. Monthly totals are planning amounts, not a forecast of available bank cash. On phones, the calendar becomes a daily agenda.
+
+Month-end dates use the month's last day; weekends do not move. Twice-monthly dates that both clamp to the same day produce one occurrence. Editing a series changes its calendar history; use occurrence edits for exceptions, or an end date to stop future events while preserving the earlier schedule.
+
+**Suggested from your transactions** analyzes the latest posted history whenever you open Recurring plans, including newly imported data. It shows repeated weekly/monthly and other supported patterns, median amounts and evidence. Review and save to accept, or dismiss/restore suggestions. This runs locally and makes no AI API calls. Existing monthly AI planning records migrate into this feature; AI's quick monthly form remains available.

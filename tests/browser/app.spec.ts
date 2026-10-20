@@ -144,12 +144,17 @@ test("all main screens meet automated contrast/accessibility checks in both them
       "Overview",
       "Transactions",
       "Budget",
+      "Recurring plans",
+      "Calendar",
       "Reports",
       "Accounts",
       "AI assistant",
       "Settings",
     ]) {
-      await page.getByRole("navigation", { name: "Main navigation" }).getByRole("button", { name, exact: true }).click();
+      await page
+        .getByRole("navigation", { name: "Main navigation" })
+        .getByRole("button", { name, exact: true })
+        .click();
       await expect(page.locator("main h1")).toBeVisible();
       await expect(page.getByText("Gathering the details…")).toHaveCount(0);
       const result = await new AxeBuilder({ page })
@@ -200,12 +205,17 @@ test("360px layouts and vector app icons", async ({ page }) => {
   for (const name of [
     "Transactions",
     "Budget",
+    "Recurring plans",
+    "Calendar",
     "Reports",
     "Accounts",
     "Settings",
   ]) {
     await page.getByRole("button", { name: "Open navigation" }).click();
-    await page.getByRole("navigation", { name: "Main navigation" }).getByRole("button", { name, exact: true }).click();
+    await page
+      .getByRole("navigation", { name: "Main navigation" })
+      .getByRole("button", { name, exact: true })
+      .click();
     await expect(page.locator("main h1")).toBeVisible();
     await expect(page.locator("body")).toHaveJSProperty("scrollWidth", 360);
   }
@@ -316,4 +326,91 @@ test("AI workspace supports local memory and confirmed recurring budget proposal
     .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
     .analyze();
   expect(result.violations).toEqual([]);
+});
+
+test("recurring plans populate budgets and calendar supports matching, unlinking and mobile access", async ({
+  page,
+}) => {
+  await login(page);
+  const meta = await (await page.request.get("/api/v1/meta")).json();
+  const current = meta.today.slice(0, 7);
+  await page
+    .getByRole("button", { name: "Recurring plans", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Add recurring item", exact: true })
+    .click();
+  await page
+    .getByLabel("Recurring item name", { exact: true })
+    .fill("Calendar fixture utility");
+  await page
+    .getByLabel("Amount per occurrence (USD)", { exact: true })
+    .fill("500");
+  await page
+    .getByLabel("Recurring category", { exact: true })
+    .selectOption("utilities");
+  await page.getByLabel("Start date", { exact: false }).fill(current + "-01");
+  await page.getByLabel("Day of month", { exact: true }).fill("1");
+  await page
+    .getByRole("button", { name: "Save recurring plan", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  const budget = await (
+    await page.request.get("/api/v1/budgets/" + current)
+  ).json();
+  expect(
+    budget.lines.find((l: any) => l.category_id === "utilities").amount,
+  ).toBe(50000);
+  const auth = await (await page.request.get("/api/v1/auth/me")).json();
+  const created = await page.request.post("/api/v1/transactions", {
+    headers: { "X-CSRF-Token": auth.csrf },
+    data: {
+      account_id: "checking",
+      date: current + "-01",
+      merchant: "Calendar fixture utility",
+      amount: -50000,
+      status: "posted",
+      allocations: [{ category_id: "utilities", amount: -50000, tags: [] }],
+    },
+  });
+  expect(created.ok()).toBeTruthy();
+  await page.getByRole("button", { name: "Calendar", exact: true }).click();
+  await page
+    .getByRole("button", { name: /Calendar fixture utility.*paid/ })
+    .click();
+  await expect(
+    page.getByText("Automatically matched", { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Unlink transaction", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page.getByRole("button", { name: /Calendar fixture utility/ }).click();
+  await expect(
+    page.getByLabel("Transaction matching", { exact: true }),
+  ).toHaveValue("none");
+  await page.getByLabel("Skip this occurrence").check();
+  await page
+    .getByRole("button", { name: "Save occurrence", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: /Calendar fixture utility.*skipped/ }),
+  ).toBeVisible();
+  await page.screenshot({
+    path: "test-results/calendar-desktop.png",
+    fullPage: true,
+  });
+  for (const mobile of [false, true]) {
+    if (mobile) await page.setViewportSize({ width: 390, height: 844 });
+    const result = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+      .analyze();
+    expect(result.violations).toEqual([]);
+    if (mobile)
+      await expect(page.locator("body")).toHaveJSProperty("scrollWidth", 390);
+  }
+  await page.screenshot({
+    path: "test-results/calendar-mobile.png",
+    fullPage: true,
+  });
 });

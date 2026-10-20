@@ -63,3 +63,11 @@ Private deployment details and live financial diagnostics are deliberately exclu
 ## Docker deployment default and GitHub updates
 
 Docker Compose now includes private HTTPS by default. The optional two-minute user-systemd deployer follows the kanban-calendar polling pattern, waits for successful CI for the exact commit, builds before restarting, backs up the ledger, and records success after health checks. Six offline deployment checks cover success, unchanged commits, CI deferral, failed build retry, startup failure, and forced rebuilds.
+
+## Recurring plans and calendar
+
+- Added recurring income, bills, subscriptions, transfers, and spending allowances with one-time, weekly, biweekly, twice-monthly, monthly, quarterly, and yearly schedules. Start dates, end dates, and short-month handling are explicit.
+- Current and future monthly plans use scheduled amounts as minimums within existing category and income plans; scheduled transfers never inflate spending. Past plans and actual transactions remain separate.
+- Added desktop calendar and mobile agenda, clear automatic payment matches, manual matching/unlinking, rescheduling, skipped occurrences, and estimated amounts.
+- Local transaction-history analysis suggests recurring items for user acceptance without paid AI calls. No personal example schedules were seeded.
+- Verification: 40 API/domain tests, lint, type checks, and production build; 10 browser tests including schedule-to-budget-to-calendar flows, both-theme accessibility, and mobile layouts. Synthetic fixtures only.

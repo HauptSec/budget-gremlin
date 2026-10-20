@@ -309,9 +309,10 @@ export function AiWorkspace({
         <>
           <h2>Bills, subscriptions & income</h2>
           <p className="muted">
-            Monthly planning records. Nothing here initiates or cancels a
-            payment. Apply a budget proposal to include these in a selected
-            month.
+            Quick monthly planning records. Saving now includes these in the
+            current budget. Use Recurring plans for other frequencies, dates,
+            matching and the calendar. Nothing here initiates or cancels a
+            payment.
           </p>
           <Button
             variant="secondary"
@@ -321,26 +322,32 @@ export function AiWorkspace({
             Propose budget from recurring items
           </Button>
           <div className="ai-recurring-list">
-            {recurring.data?.map((r: any) => (
-              <article className="panel row" key={r.id}>
-                <div>
-                  <strong>{r.name}</strong>
-                  <p>
-                    {r.kind} · {money(r.amount)} / month · day {r.due_day} ·{" "}
-                    {r.active ? "Active" : "Inactive"}
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  disabled={busy}
-                  onClick={() =>
-                    void action("/ai/recurring", { ...r, active: !r.active })
-                  }
-                >
-                  {r.active ? "Deactivate" : "Activate"}
-                </Button>
-              </article>
-            ))}
+            {recurring.data
+              ?.filter(
+                (r: any) =>
+                  ["bill", "subscription", "income"].includes(r.kind) &&
+                  (!r.frequency || r.frequency === "monthly"),
+              )
+              .map((r: any) => (
+                <article className="panel row" key={r.id}>
+                  <div>
+                    <strong>{r.name}</strong>
+                    <p>
+                      {r.kind} · {money(r.amount)} · {r.frequency || "monthly"}{" "}
+                      · {r.active ? "Active" : "Inactive"}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    disabled={busy}
+                    onClick={() =>
+                      void action("/ai/recurring", { ...r, active: !r.active })
+                    }
+                  >
+                    {r.active ? "Deactivate" : "Activate"}
+                  </Button>
+                </article>
+              ))}
           </div>
           <RecurringEditor
             categories={meta.data.categories}
