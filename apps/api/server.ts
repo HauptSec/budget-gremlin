@@ -50,6 +50,7 @@ import {
   ruleSchema,
   transactionSchema,
   type Transaction,
+  type Category,
   type Budget,
   type Rule,
 } from "../../packages/shared/schema.ts";
@@ -94,6 +95,7 @@ export async function createServer(
     secure = process.env.SECURE_COOKIES === "true",
     serveStatic = true,
     rateLimitMax = 300,
+    loginRateLimitMax = 10,
   } = {},
 ) {
   migrateSchedules(store);
@@ -279,7 +281,7 @@ export async function createServer(
   app.post(
     "/api/v1/auth/login",
     {
-      config: { rateLimit: { max: 10, timeWindow: "1 minute" } },
+      config: { rateLimit: { max: loginRateLimitMax, timeWindow: "1 minute" } },
       schema: {
         summary: "Sign in",
         body: z.toJSONSchema(loginSchema, { target: "draft-7" }),
@@ -570,6 +572,7 @@ export async function createServer(
       const q = z
         .object({
           search: z.string().optional(),
+          flow: z.enum(["income", "in", "out"]).optional(),
           account: z.string().optional(),
           category: z.string().optional(),
           tag: z.string().optional(),
@@ -583,6 +586,12 @@ export async function createServer(
           limit: z.coerce.number().int().min(1).max(100).default(30),
         })
         .parse(req.query);
+      const incomeCategories = new Set(
+        store
+          .all<Category>("categories")
+          .filter((c) => c.kind === "income")
+          .map((c) => c.id),
+      );
       const rows = store
         .txs(q.start, q.end)
         .filter(
@@ -593,6 +602,14 @@ export async function createServer(
                 .toLowerCase()
                 .includes(q.search.toLowerCase())) &&
             (!q.account || t.account_id === q.account) &&
+            (!q.flow ||
+              (q.flow === "in" && t.amount > 0) ||
+              (q.flow === "out" && t.amount < 0) ||
+              (q.flow === "income" &&
+                !t.transfer_id &&
+                t.allocations.some(
+                  (a) => a.amount > 0 && incomeCategories.has(a.category_id),
+                ))) &&
             (!q.category ||
               t.allocations.some((a) => a.category_id === q.category)) &&
             (!q.tag || t.allocations.some((a) => a.tags.includes(q.tag!))) &&

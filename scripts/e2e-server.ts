@@ -10,6 +10,7 @@ await seed(store, "gremlin-test-password");
 const app = await createServer(store, {
   origin: "http://127.0.0.1:4173",
   rateLimitMax: 10000,
+  loginRateLimitMax: 1000, // Synthetic browser suite signs in once per test.
 });
 await app.listen({ host: "127.0.0.1", port: 4173 });
 for (const signal of ["SIGINT", "SIGTERM"] as const)

@@ -414,3 +414,49 @@ test("recurring plans populate budgets and calendar supports matching, unlinking
     fullPage: true,
   });
 });
+
+test("income filters and creating a recurring plan from transaction details", async ({
+  page,
+}) => {
+  await login(page);
+  await page.getByRole("button", { name: "Transactions", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Add transaction", exact: true })
+    .click();
+  await page
+    .getByLabel("Merchant", { exact: true })
+    .fill("Recurring salary fixture");
+  await page.getByLabel("Amount", { exact: true }).fill("1250.00");
+  await page.getByLabel("Category 1", { exact: true }).selectOption("income");
+  await page.getByRole("button", { name: "Save transaction" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page.getByLabel("Search transactions").fill("Recurring salary fixture");
+  await page.getByLabel("Filter money flow").selectOption("out");
+  await expect(page.getByText("Nothing here just yet")).toBeVisible();
+  await page.getByLabel("Filter money flow").selectOption("income");
+  await page.getByRole("button", { name: /Recurring salary fixture/ }).click();
+  await page
+    .getByRole("button", { name: "Add to recurring plans", exact: true })
+    .click();
+  await expect(page.getByLabel("Recurring item name")).toHaveValue(
+    "Recurring salary fixture",
+  );
+  await expect(page.getByLabel("Recurring item type")).toHaveValue("income");
+  await expect(
+    page.getByLabel("Amount per occurrence (USD)", { exact: true }),
+  ).toHaveValue("1250");
+  await expect(
+    page.getByLabel("Recurring category", { exact: true }),
+  ).toHaveValue("income");
+  await page.getByLabel("Frequency", { exact: true }).selectOption("biweekly");
+  await page
+    .getByRole("button", { name: "Save recurring plan", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page
+    .getByRole("button", { name: "Recurring plans", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Recurring salary fixture", exact: true }),
+  ).toBeVisible();
+});

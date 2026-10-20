@@ -484,7 +484,7 @@ export function RecurringWorkspace({
   );
 }
 
-function ScheduleEditor({
+export function ScheduleEditor({
   item,
   meta,
   busy,

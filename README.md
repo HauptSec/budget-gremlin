@@ -165,3 +165,9 @@ Saving raises the current month's category allocation or expected income only wh
 Month-end dates use the month's last day; weekends do not move. Twice-monthly dates that both clamp to the same day produce one occurrence. Editing a series changes its calendar history; use occurrence edits for exceptions, or an end date to stop future events while preserving the earlier schedule.
 
 **Suggested from your transactions** analyzes the latest posted history whenever you open Recurring plans, including newly imported data. It shows repeated weekly/monthly and other supported patterns, median amounts and evidence. Review and save to accept, or dismiss/restore suggestions. This runs locally and makes no AI API calls. Existing monthly AI planning records migrate into this feature; AI's quick monthly form remains available.
+
+### Transaction shortcuts
+
+On Transactions, use **All money flows** to choose **Income** (positive income-category allocations, excluding linked transfers), **All money in** (all positive transactions, including refunds, deposits and transfers), or **All money out**. These filters combine with account, category, date and review filters.
+
+Open a saved transaction and select **Add to recurring plans** to review a prefilled monthly schedule. Adjust frequency and start date before saving. This uses saved transaction values, not unsaved edits. Split transactions require a category choice; incoming transfers require choosing the paying account. Saving uses the existing recurring-plan budget minimum behavior and never creates a bank transaction.

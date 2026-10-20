@@ -1,4 +1,5 @@
-import { RecurringWorkspace } from "./RecurringWorkspace";
+import type { Schedule } from "../../../packages/recurring/index.ts";
+import { RecurringWorkspace, ScheduleEditor } from "./RecurringWorkspace";
 import { AiWorkspace } from "./AiWorkspace";
 import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
@@ -811,6 +812,7 @@ function Transactions({ notice }: Props) {
     [category, setCategory] = useState(""),
     [review, setReview] = useState(""),
     [status, setStatus] = useState(""),
+    [flow, setFlow] = useState(""),
     [advanced, setAdvanced] = useState(false),
     [from, setFrom] = useState(""),
     [to, setTo] = useState(""),
@@ -832,6 +834,7 @@ function Transactions({ notice }: Props) {
     ...(category ? { category } : {}),
     ...(review ? { reviewed: review } : {}),
     ...(status ? { status } : {}),
+    ...(flow ? { flow } : {}),
     ...(from ? { start: from } : {}),
     ...(to ? { end: to } : {}),
     ...(tagFilter ? { tag: tagFilter } : {}),
@@ -946,6 +949,20 @@ function Transactions({ notice }: Props) {
                 {c.name}
               </option>
             ))}
+          </select>
+          <select
+            aria-label="Filter money flow"
+            value={flow}
+            onChange={(e) => {
+              setFlow(e.target.value);
+              setPage(1);
+              setSelected([]);
+            }}
+          >
+            <option value="">All money flows</option>
+            <option value="income">Income</option>
+            <option value="in">All money in</option>
+            <option value="out">All money out</option>
           </select>
           <select
             aria-label="Filter transaction status"
@@ -1296,6 +1313,35 @@ function TransactionModal({
     [busy, setBusy] = useState(false),
     [rule, setRule] = useState(false);
   const [merchant, setMerchant] = useState(tx?.merchant || "");
+  const [recurringDraft, setRecurringDraft] =
+    useState<Partial<Schedule> | null>(null);
+  const client = useQueryClient();
+  if (recurringDraft)
+    return (
+      <ScheduleEditor
+        item={recurringDraft}
+        meta={meta}
+        busy={busy}
+        error={err}
+        onClose={() => {
+          setRecurringDraft(null);
+          setErr("");
+        }}
+        onSave={async (value) => {
+          setBusy(true);
+          setErr("");
+          try {
+            await api("/recurring", value);
+            await client.invalidateQueries();
+            onClose();
+          } catch (e) {
+            setErr((e as Error).message);
+          } finally {
+            setBusy(false);
+          }
+        }}
+      />
+    );
   return (
     <Modal
       title={tx ? "Transaction details" : "Add a transaction"}
@@ -1517,6 +1563,57 @@ function TransactionModal({
             />{" "}
             Create a category rule for this merchant
           </label>
+        )}
+        {tx && (
+          <div>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={busy || tx.amount === 0}
+              onClick={() => {
+                const sourceCategory = meta.categories.find(
+                  (c: Category) => c.id === tx.allocations[0]?.category_id,
+                );
+                const kind =
+                  tx.transfer_id || sourceCategory?.kind === "transfer"
+                    ? "transfer"
+                    : tx.amount > 0
+                      ? "income"
+                      : "bill";
+                setErr("");
+                setRecurringDraft({
+                  name: tx.merchant.slice(0, 100),
+                  merchant: tx.merchant,
+                  amount: Math.abs(tx.amount),
+                  kind,
+                  category_id:
+                    tx.allocations.length === 1
+                      ? tx.allocations[0].category_id
+                      : undefined,
+                  account_id:
+                    kind === "transfer" && tx.amount > 0 ? null : tx.account_id,
+                  start_date: tx.date,
+                  frequency: "monthly",
+                  days: [Number(tx.date.slice(8))],
+                  auto_match: true,
+                });
+              }}
+            >
+              Add to recurring plans
+            </Button>
+            <p className="fine-print">
+              Starts from the saved transaction; unsaved edits are not included.
+              Review the frequency and start date before saving.
+              {tx.allocations.length > 1 &&
+                " Split transactions use the full amount; choose a recurring category."}
+              {(tx.transfer_id ||
+                meta.categories.find(
+                  (c: Category) => c.id === tx.allocations[0]?.category_id,
+                )?.kind === "transfer") &&
+                tx.amount > 0 &&
+                " Choose the paying account for this incoming transfer."}
+            </p>
+          </div>
         )}
         {tx?.transfer_id && (
           <Button

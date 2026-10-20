@@ -71,3 +71,9 @@ Docker Compose now includes private HTTPS by default. The optional two-minute us
 - Added desktop calendar and mobile agenda, clear automatic payment matches, manual matching/unlinking, rescheduling, skipped occurrences, and estimated amounts.
 - Local transaction-history analysis suggests recurring items for user acceptance without paid AI calls. No personal example schedules were seeded.
 - Verification: 40 API/domain tests, lint, type checks, and production build; 10 browser tests including schedule-to-budget-to-calendar flows, both-theme accessibility, and mobile layouts. Synthetic fixtures only.
+
+## Transaction shortcuts
+
+- Added income, all money in, and all money out filters, combined with existing filters before pagination.
+- Added a transaction-details action to create a reviewed recurring-plan draft from saved values, with explicit split-category and incoming-transfer account choices.
+- Verified 41 API/domain tests, lint, type checks, production build, and all 11 browser scenarios (the new scenario rerun after correcting its heading selector). Test-only login limits accommodate the larger suite; production limits are unchanged.

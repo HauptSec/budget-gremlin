@@ -738,3 +738,62 @@ test("manual sync prioritizes recent activity without skipping the historical cu
     await f.close();
   }
 });
+
+test("money-flow filters distinguish income, refunds, deposits and transfers before pagination", async () => {
+  const f = await fixture();
+  try {
+    f.store.put("categories", "salary-custom", {
+      id: "salary-custom",
+      name: "Salary",
+      group_name: "Income",
+      kind: "income",
+      archived: false,
+    });
+    const base = f.store.txs()[0];
+    const rows = [
+      ["salary", 10000, "salary-custom", null],
+      ["refund", 1000, "groceries", null],
+      ["deposit", 2000, "uncategorized", null],
+      ["transfer", 3000, "income", "pair"],
+      ["expense", -500, "groceries", null],
+      ["income-reversal", -1000, "income", null],
+      ["zero", 0, "income", null],
+    ] as const;
+    for (const [id, amount, category_id, transfer_id] of rows)
+      f.store.saveTx({
+        ...base,
+        id: "flow-" + id,
+        merchant: "Flow fixture " + id,
+        account_id: "checking",
+        date: "2026-06-01",
+        amount,
+        transfer_id,
+        status: "posted",
+        allocations: [{ category_id, amount, tags: [] }],
+      });
+    const query = async (flow: string, extra = "") => {
+      const r = await f.call(
+        "GET",
+        "/transactions?search=Flow%20fixture&flow=" + flow + extra,
+      );
+      assert.equal(r.statusCode, 200, r.body);
+      return r.json();
+    };
+    assert.deepEqual(
+      (await query("income")).rows.map((t: any) => t.id),
+      ["flow-salary"],
+    );
+    assert.equal((await query("in")).total, 4);
+    assert.equal((await query("out")).total, 2);
+    assert.equal((await query("in", "&limit=1")).pages, 4);
+    assert.equal((await query("income", "&account=savings")).total, 0);
+    assert.equal((await query("income", "&start=2026-07-01")).total, 0);
+    assert.equal((await query("in", "&category=groceries")).total, 1);
+    assert.equal(
+      (await f.call("GET", "/transactions?flow=invalid")).statusCode,
+      400,
+    );
+  } finally {
+    await f.close();
+  }
+});
